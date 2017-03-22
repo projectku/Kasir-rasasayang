@@ -1,12 +1,12 @@
 angular.module('starter')
-.factory('TransaksiFac',function($http, $q, $window,$rootScope,UtilService)
+.factory('TransaksiHeaderFac',function($http, $q, $window,$rootScope,UtilService)
 {
-    var GetTransaksis = function(kodestore,tanggalsekarang,transtype)
+    var GetTransaksiHeaders = function(kodestore,tanggalsekarang,transtype)
     {
         var deferred        = $q.defer();
         var globalurl       = UtilService.ApiUrl();
         // var url             = globalurl + "efenbi-rasasayang/transaksis";
-        var url             = globalurl + "efenbi-rasasayang/transaksis?OUTLET_ID=" + kodestore + "&TRANS_DATE="+ tanggalsekarang +"&TRANS_TYPE=" + transtype;
+        var url             = globalurl + "efenbi-rasasayang/transaksi-headers?OUTLET_ID=" + kodestore + "&TRANS_DATE="+ tanggalsekarang +"&TRANS_TYPE=" + transtype;
         var method          = "GET";
         $http({method:method, url:url,cache:false})
         .success(function(response) 
@@ -27,33 +27,11 @@ angular.module('starter')
         return deferred.promise;
     }
 
-    var SetTranskasi = function(data)
+    var SetTranskasiHeader = function(data)
     {
         var deferred            = $q.defer();
         var globalurl           = UtilService.ApiUrl();      
-        var url                 = globalurl + "efenbi-rasasayang/transaksis";
-
-        var result              = UtilService.SerializeObject(data);
-        var serialized          = result.serialized;
-        var config              = result.config;
-
-        $http.post(url,serialized,config)
-        .success(function(data,status,headers,config) 
-        {
-            deferred.resolve(data);
-        })
-        .error(function(err,status)
-        {
-            deferred.reject(err);
-        });
-        return deferred.promise;  
-    }
-
-    var SetTranskasiClosing = function(data)
-    {
-        var deferred            = $q.defer();
-        var globalurl           = UtilService.ApiUrl();      
-        var url                 = globalurl + "efenbi-rasasayang/transaksi-closings";
+        var url                 = globalurl + "efenbi-rasasayang/transaksi-headers";
 
         var result              = UtilService.SerializeObject(data);
         var serialized          = result.serialized;
@@ -72,8 +50,7 @@ angular.module('starter')
     }
 
 	return{
-            GetTransaksis:GetTransaksis,
-            SetTranskasi:SetTranskasi,
-            SetTranskasiClosing:SetTranskasiClosing
+            GetTransaksiHeaders:GetTransaksiHeaders,
+            SetTranskasiHeader:SetTranskasiHeader
         }
 });

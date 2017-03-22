@@ -1,15 +1,6 @@
 angular.module('starter')
-.controller('CashierCtrl', function($scope,$filter,$state,$ionicLoading,$ionicPopup,$ionicModal,StorageService,ProductFac,ProductCombFac) 
+.controller('CashierCtrl', function($scope,$filter,$state,$ionicLoading,$ionicModal,StorageService,ProductFac) 
 {
-    ProductCombFac.GetPureProductComb()
-    .then(function(response)
-    {
-        console.log(response);
-    },
-    function(error)
-    {
-        console.log(error);
-    });
     $scope.profile      = StorageService.get('profile');
     $scope.lokasistore  = StorageService.get('LokasiStore');
     if($scope.profile.gambar == 'none')
@@ -44,31 +35,22 @@ angular.module('starter')
         if(localbarangpenjualan)
         {
             var data = {};
-            var lastbooking = StorageService.get('LastBooking');
-            if(lastbooking)
+            var panjangtransaksi = $scope.transaks.length
+            if( panjangtransaksi > 0)
             {
-                if(lastbooking.tglbooking == tglsekarang)
-                {
-                    var lastbookingserialnumber = lastbooking.databooking;
-                    var lastthree = lastbookingserialnumber.substr(lastbookingserialnumber.length - 3); // => "Tabs1"
-                    data.notransk = 'LG-SR-KB-' + tglsekarang + '-00' + (Number(lastthree) + 1);
-                    data.status   ='incomplete';  
-                }
-                else
-                {
-                    data.notransk = 'LG-SR-KB-' + tglsekarang + '-001';
-                    data.status   ='incomplete';  
-                } 
+                var stringtransaksi = $scope.transaks[panjangtransaksi-1].notransk;
+                var lastthree       = stringtransaksi.substr(stringtransaksi.length - 3); // => "Tabs1"
+                data.notransk = 'LG-SR-KB-' + tglsekarang + '-00' + (Number(lastthree) + 1);
+                data.status   ='incomplete';
             }
             else
             {
-                data.notransk = 'LG-SR-KB-' + tglsekarang + '-001';
+                data.notransk = 'LG-SR-KB-' + tglsekarang + '-00' + ($scope.transaks.length + 1);
                 data.status   ='incomplete';
             }
 
             $scope.transaks.push(data);
             StorageService.set('bookingtransaksi',$scope.transaks);
-            StorageService.set('LastBooking',{'databooking':data.notransk,'tglbooking':tglsekarang});
             $scope.statusincomplete = 1;
         }
         else
@@ -77,10 +59,10 @@ angular.module('starter')
         }
     }
     $scope.statusincomplete = _.findIndex($scope.transaks, {'status': 'incomplete'});
-    console.log($filter('currency')(12000));
+
 })
 
-.controller('SalesCtrl', function($scope,$state,$ionicLoading,$ionicPopup,$ionicModal,UtilService,StorageService) 
+.controller('SalesCtrl', function($scope,$state,$ionicLoading,$ionicModal,UtilService,StorageService) 
 {
     var arrayasli   = StorageService.get('barangpenjualan');
     var array       = angular.copy(arrayasli);
@@ -202,7 +184,7 @@ angular.module('starter')
     {
         $scope.item.maksimal = $scope.item.maksimal + $scope.item.quantity;
         var indexarrayasli = _.findIndex(arrayasli, {'id': $scope.item.id});
-        arrayasli[indexarrayasli].maksimal = $scope.item.maksimal;
+        arrayasli[indexarrayasli].maksimal = $scope.item.quantity;
         StorageService.set('barangpenjualan',arrayasli);
         $scope.item.quantity = 0;
     }
@@ -220,7 +202,7 @@ angular.module('starter')
     } 
 })
 
-.controller('CartCtrl', function($scope,$state,$ionicLoading,$ionicPopup,$ionicModal,$ionicHistory,$ionicNavBarDelegate,UtilService,StorageService) 
+.controller('CartCtrl', function($scope,$state,$ionicLoading,$ionicModal,$ionicHistory,$ionicNavBarDelegate,UtilService,StorageService) 
 {
     $scope.noresi   = StorageService.get('notransaksi');
     var resi        = StorageService.get($scope.noresi);
@@ -267,25 +249,13 @@ angular.module('starter')
     $scope.total = UtilService.SumPriceWithQty($scope.datas,'harga','quantity');
     $scope.pembayaran = function(noresi)
     {
-
-        var confirmPopup = $ionicPopup.confirm(
-                                {
-                                    title: 'Pembayaran',
-                                    template: 'Are you sure to pay this cart?'
-                                });
-        confirmPopup.then(function(res) 
-        {
-            if(res) 
-            {
-                var bookingtransaksi        = StorageService.get('bookingtransaksi');
-                var indexbookingtransaksi   = _.findIndex(bookingtransaksi, {'notransk': $scope.noresi});
-                bookingtransaksi[indexbookingtransaksi].status = 'complete';
-                StorageService.set('bookingtransaksi',bookingtransaksi);
-                StorageService.destroy('notransaksi');
-                $ionicHistory.nextViewOptions({disableAnimate: true, disableBack: true});
-                $state.go('tab.cashier');
-            } 
-        });
-
+        alert("Belanjaan Anda Berhasil Diproses.Total Pembayaran = Rp. " + $scope.total);
+        var bookingtransaksi        = StorageService.get('bookingtransaksi');
+        var indexbookingtransaksi   = _.findIndex(bookingtransaksi, {'notransk': $scope.noresi});
+        bookingtransaksi[indexbookingtransaksi].status = 'complete';
+        StorageService.set('bookingtransaksi',bookingtransaksi);
+        StorageService.destroy('notransaksi');
+        $ionicHistory.nextViewOptions({disableAnimate: true, disableBack: true});
+        $state.go('tab.cashier');
     }
 });
